@@ -7,12 +7,15 @@ import com.medbay.api.model.Paciente;
 import com.medbay.api.model.enums.StatusConsulta;
 import com.medbay.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.medbay.api.model.HistoricoMedico;
 import com.medbay.api.model.Pagamento;
 import com.medbay.api.model.ReceitaMedica;
 import com.medbay.api.model.enums.StatusPagamento;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -169,5 +172,55 @@ public class ConsultaController {
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(resposta);
+    }
+
+    // UC9: Listar todas as consultas (Visão da Recepção)
+    @GetMapping
+    public ResponseEntity<List<ConsultaResponseDTO>> listarTodasConsultas(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate data) {
+
+        List<Consulta> consultas;
+        if (data != null) {
+            // Filtra por dia específico (ideal para a recepção)
+            LocalDateTime inicio = data.atStartOfDay();
+            LocalDateTime fim = data.atTime(23, 59, 59);
+            consultas = consultaRepository.findByDataHoraBetween(inicio, fim);
+        } else {
+            consultas = consultaRepository.findAll();
+        }
+
+        List<ConsultaResponseDTO> resposta = consultas.stream()
+                .map(ConsultaResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    // UC9: Atualizar Consulta (Editar agendamento)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> atualizarConsulta(@PathVariable Long id, @RequestBody AgendamentoRequestDTO dados) {
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+
+        if (dados.getDataHora() != null) {
+            // Revalida horário (Lógica do UC3)
+            boolean horarioOcupado = consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                    consulta.getMedico().getId(),
+                    dados.getDataHora(),
+                    StatusConsulta.CANCELADA
+            );
+
+            if (horarioOcupado && !dados.getDataHora().equals(consulta.getDataHora())) {
+                return ResponseEntity.badRequest().body("Horário indisponível.");
+            }
+            consulta.setDataHora(dados.getDataHora());
+        }
+
+        if (dados.getTipoConsulta() != null) {
+            consulta.setTipoConsulta(dados.getTipoConsulta());
+        }
+
+        consultaRepository.save(consulta);
+        return ResponseEntity.ok("Consulta atualizada com sucesso.");
     }
 }

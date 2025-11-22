@@ -16,4 +16,9 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
 
     // Verifica se existe consulta para o médico, no horário X, que NÃO esteja cancelada
     boolean existsByMedicoIdAndDataHoraAndStatusNot(Long medicoId, LocalDateTime dataHora, StatusConsulta status);
+
+    // UC7: Buscar consultas em um intervalo de tempo (ex: próximo dia)
+    List<Consulta> findByDataHoraBetweenAndStatus(LocalDateTime inicio, LocalDateTime fim, StatusConsulta status);
+
+    List<Consulta> findByDataHoraBetween(LocalDateTime inicio, LocalDateTime fim);
 }

@@ -18,6 +18,8 @@ import MinhasConsultas from './pages/MinhasConsultas';
 import DashboardMedico from './pages/DashboardMedico';
 import Perfil from './pages/Perfil';
 import CadastroMedico from './pages/CadastroMedico';
+import Relatorios from './pages/Relatorios'
+import Recepcao from './pages/Recepcao';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -37,6 +39,8 @@ createRoot(document.getElementById('root')).render(
             <Route path="/area-medico" element={<DashboardMedico />} />
             <Route path="/perfil" element={<Perfil />} />
             <Route path="/cadastro-medico" element={<CadastroMedico />} />
+            <Route path="/recepcao" element={<Recepcao />} />
+            <Route path="/relatorios" element={<Relatorios />} />
             </Route>
         </Routes>
       </BrowserRouter>

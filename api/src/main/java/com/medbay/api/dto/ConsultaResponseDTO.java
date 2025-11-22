@@ -15,6 +15,7 @@ public class ConsultaResponseDTO {
     private String status;
     private String tipo;
     private BigDecimal valor;
+    private String pacienteNome;
 
     public ConsultaResponseDTO(Consulta consulta) {
         this.id = consulta.getId();
@@ -25,5 +26,6 @@ public class ConsultaResponseDTO {
         this.status = consulta.getStatus().name();
         this.tipo = consulta.getTipoConsulta().name();
         this.valor = consulta.getValor();
+        this.pacienteNome = consulta.getPaciente().getNome();
     }
 }

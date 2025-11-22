@@ -40,7 +40,7 @@ const Navbar = () => {
                 <p className="text-[#159eec]">0123 Algum Lugar</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="container mx-auto flex justify-between px-4 lg:px-20">
               <div className="flex gap-4 ml-auto">
                 <Link to="/cadastro-medico" className="hover:text-[#159eec]">Sou Médico</Link>
               </div>
@@ -62,8 +62,16 @@ const Navbar = () => {
             {/* Lógica Condicional de Menu */}
             {user && user.tipo === 'MEDICO' ? (
                <li><Link to="/area-medico" className={isActive("/area-medico")}>Minha Agenda</Link></li>
-            ) : (
+              ) : (
                <li><Link to="/minhas-consultas" className={isActive("/minhas-consultas")}>Meus Agendamentos</Link></li>
+            )}
+            {user && user.tipo !== 'PACIENTE' && (
+              <li>
+                  <Link to="/relatorios" className={isActive("/relatorios")}>Relatórios</Link>
+              </li>
+            )}
+            {user && user.tipo !== 'PACIENTE' && (
+                <li><Link to="/recepcao" className={isActive("/recepcao")}>Recepção</Link></li>
             )}
           </ul>
 
