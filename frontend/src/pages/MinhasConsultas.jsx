@@ -1,23 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Calendar, Clock, MapPin, Video, FileText, DollarSign } from 'lucide-react';
 import api from '../services/api';
+import { AuthContext } from '../context/AuthContext';
 
 export default function MinhasConsultas() {
   const [consultas, setConsultas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext); 
 
   useEffect(() => {
-    // ID 4 hardcoded conforme nosso usuário de teste
-    api.get('/consultas/paciente/4')
-      .then(response => {
-        setConsultas(response.data);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Erro ao buscar consultas:", error);
-        setLoading(false);
-      });
-  }, []);
+    // Verificação de segurança: só busca se houver usuário logado
+    if (user && user.id) {
+      api.get(`/consultas/paciente/${user.id}`) // 4. Uso do ID dinâmico
+        .then(response => {
+          setConsultas(response.data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error("Erro ao buscar consultas:", error);
+          setLoading(false);
+        });
+    }
+  }, [user]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -26,6 +30,30 @@ export default function MinhasConsultas() {
       case 'CANCELADA': return 'bg-red-100 text-red-700 border-red-200';
       case 'REALIZADA': return 'bg-gray-100 text-gray-700 border-gray-200';
       default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+
+  const handleCancelar = async (consultaId) => {
+    const confirmacao = window.confirm("Tem certeza que deseja cancelar esta consulta?");
+    
+    if (!confirmacao) return;
+
+    try {
+      await api.patch(`/consultas/${consultaId}/cancelar`);
+      
+      // Feedback visual: Atualiza o estado local para refletir a mudança sem recarregar a página
+      setConsultas(prevConsultas => 
+        prevConsultas.map(consulta => 
+          consulta.id === consultaId 
+            ? { ...consulta, status: 'CANCELADA' } 
+            : consulta
+        )
+      );
+      
+      alert('Consulta cancelada com sucesso!');
+    } catch (error) {
+      console.error("Erro ao cancelar:", error);
+      alert(error.response?.data || "Erro ao processar o cancelamento.");
     }
   };
 
@@ -107,8 +135,8 @@ export default function MinhasConsultas() {
                     )}
                     {consulta.status === 'AGENDADA' && (
                       <button 
-                        className="flex-1 md:flex-none px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition text-sm font-medium"
-                        onClick={() => alert('Funcionalidade de cancelamento em desenvolvimento (UC4)')}
+                        className="flex-1 md:flex-none px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition text-sm font-medium cursor-pointer"
+                        onClick={() => handleCancelar(consulta.id)} // Chamada da nova função
                       >
                         Cancelar
                       </button>

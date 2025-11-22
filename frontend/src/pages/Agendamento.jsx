@@ -59,9 +59,9 @@ export default function Agendamento() {
     try {
       await api.post('/consultas', payload);
       setMensagemSucesso('Agendamento realizado com sucesso! Verifique seu e-mail.');
-      // Reset form opcional
     } catch (error) {
-      alert('Erro ao agendar: ' + (error.response?.data?.message || error.message));
+      const mensagemErro = error.response?.data || error.message;
+      alert('Erro ao agendar: ' + mensagemErro);
     }
   };
 

@@ -1,10 +1,12 @@
 import { Outlet, Link, useLocation } from 'react-router';
 import { Phone, Clock, MapPin, Search, Facebook, Linkedin, Instagram, Send } from 'lucide-react';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
+  const { user } = useContext(AuthContext);
 
-  // Função para verificar se o link está ativo (opcional, para destacar no menu)
   const isActive = (path) => location.pathname === path ? "text-[#159eec]" : "text-white hover:text-[#159eec]";
 
   return (
@@ -51,7 +53,12 @@ const Navbar = () => {
             <li><Link to="/servicos" className={isActive("/servicos")}>Serviços</Link></li>
             <li><Link to="/colaboradores" className={isActive("/colaboradores")}>Colaboradores</Link></li>
             <li><Link to="/contato" className={isActive("/contato")}>Contato</Link></li>
-            <li><Link to="/minhas-consultas" className={isActive("/minhas-consultas")}>Meus Agendamentos</Link></li>
+            {/* Lógica Condicional de Menu */}
+            {user && user.tipo === 'MEDICO' ? (
+               <li><Link to="/area-medico" className={isActive("/area-medico")}>Minha Agenda</Link></li>
+            ) : (
+               <li><Link to="/minhas-consultas" className={isActive("/minhas-consultas")}>Meus Agendamentos</Link></li>
+            )}
           </ul>
           
           <div className="flex items-center gap-4">

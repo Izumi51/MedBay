@@ -1,6 +1,6 @@
 package com.medbay.api.controller;
 
-import com.medbay.api.dto.AgendamentoRequestDTO;
+import com.medbay.api.dto.*;
 import com.medbay.api.model.Consulta;
 import com.medbay.api.model.Medico;
 import com.medbay.api.model.Paciente;
@@ -9,15 +9,11 @@ import com.medbay.api.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.medbay.api.dto.HistoricoRequestDTO;
-import com.medbay.api.dto.PagamentoRequestDTO;
-import com.medbay.api.dto.ReceitaRequestDTO;
 import com.medbay.api.model.HistoricoMedico;
 import com.medbay.api.model.Pagamento;
 import com.medbay.api.model.ReceitaMedica;
 import com.medbay.api.model.enums.StatusPagamento;
 import java.time.LocalDateTime;
-import com.medbay.api.dto.ConsultaResponseDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +46,16 @@ public class ConsultaController {
         // 2. Validar Paciente (No fluxo real, pegaríamos do Token JWT)
         Paciente paciente = pacienteRepository.findById(dados.getPacienteId())
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
+
+        boolean horarioOcupado = consultaRepository.existsByMedicoIdAndDataHoraAndStatusNot(
+                dados.getMedicoId(),
+                dados.getDataHora(),
+                StatusConsulta.CANCELADA
+        );
+
+        if (horarioOcupado) {
+            return ResponseEntity.badRequest().body("Erro: Este médico já possui um agendamento para este horário.");
+        }
 
         // 3. Criar Consulta
         Consulta consulta = new Consulta();
@@ -128,6 +134,38 @@ public class ConsultaController {
 
         List<ConsultaResponseDTO> resposta = consultas.stream()
                 .map(ConsultaResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resposta);
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<?> cancelarConsulta(@PathVariable Long id) {
+        // 1. Busca a consulta
+        Consulta consulta = consultaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Consulta não encontrada"));
+
+        // 2. Validação: Apenas consultas "AGENDADA" podem ser canceladas
+        if (consulta.getStatus() != StatusConsulta.AGENDADA) {
+            return ResponseEntity.badRequest().body("Não é possível cancelar uma consulta que já foi realizada ou cancelada.");
+        }
+
+        // 3. Atualiza o status
+        consulta.setStatus(StatusConsulta.CANCELADA);
+        consultaRepository.save(consulta);
+
+        // 4. (Opcional) Lógica de Notificação (Email/SMS) entraria aqui
+        // emailService.enviarNotificacaoCancelamento(consulta.getMedico(), consulta.getPaciente());
+
+        return ResponseEntity.ok("Consulta cancelada com sucesso.");
+    }
+
+    @GetMapping("/medico/{medicoId}")
+    public ResponseEntity<List<AgendaMedicoDTO>> listarAgendaMedico(@PathVariable Long medicoId) {
+        List<Consulta> consultas = consultaRepository.findByMedicoId(medicoId);
+
+        List<AgendaMedicoDTO> resposta = consultas.stream()
+                .map(AgendaMedicoDTO::new)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(resposta);
