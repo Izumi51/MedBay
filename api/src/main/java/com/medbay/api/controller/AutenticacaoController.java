@@ -2,8 +2,10 @@ package com.medbay.api.controller;
 
 import com.medbay.api.dto.DadosAutenticacao;
 import com.medbay.api.dto.DadosTokenJWT;
+import com.medbay.api.model.Medico;
 import com.medbay.api.model.Paciente;
 import com.medbay.api.model.Usuario;
+import com.medbay.api.repository.MedicoRepository;
 import com.medbay.api.repository.PacienteRepository;
 import com.medbay.api.service.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 public class AutenticacaoController {
+
+    @Autowired
+    private MedicoRepository medicoRepository;
 
     @Autowired
     private AuthenticationManager manager;
@@ -52,5 +57,19 @@ public class AutenticacaoController {
         repository.save(dados);
 
         return ResponseEntity.ok("Usuário cadastrado com sucesso");
+    }
+
+    @PostMapping("/cadastro/medico")
+    public ResponseEntity cadastrarMedico(@RequestBody Medico dados) {
+        if (repository.findByEmail(dados.getEmail()) != null) return ResponseEntity.badRequest().body("Email já cadastrado");
+        if (dados.getCrm() == null || dados.getEspecialidade() == null) return ResponseEntity.badRequest().body("CRM e Especialidade são obrigatórios");
+
+        // Encriptar senha antes de salvar
+        dados.setSenha(passwordEncoder.encode(dados.getSenha()));
+        dados.setTipoUsuario("MEDICO");
+
+        medicoRepository.save(dados);
+
+        return ResponseEntity.ok("Médico cadastrado com sucesso");
     }
 }

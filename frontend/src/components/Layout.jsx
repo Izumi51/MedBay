@@ -2,6 +2,7 @@ import { Outlet, Link, useLocation } from 'react-router';
 import { Phone, Clock, MapPin, Search, Facebook, Linkedin, Instagram, Send } from 'lucide-react';
 import { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
+import { User, LogIn } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -39,6 +40,11 @@ const Navbar = () => {
                 <p className="text-[#159eec]">0123 Algum Lugar</p>
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <div className="flex gap-4 ml-auto">
+                <Link to="/cadastro-medico" className="hover:text-[#159eec]">Sou Médico</Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -60,9 +66,23 @@ const Navbar = () => {
                <li><Link to="/minhas-consultas" className={isActive("/minhas-consultas")}>Meus Agendamentos</Link></li>
             )}
           </ul>
-          
+
           <div className="flex items-center gap-4">
-            <Search size={20} className="cursor-pointer hover:text-[#159eec]" />
+            {/* Botão Condicional: Login ou Perfil */}
+            {user ? (
+                <Link to="/perfil" className="flex items-center gap-2 bg-[#159eec] px-4 py-2 rounded-full text-sm font-bold hover:bg-white hover:text-[#1f2b6c] transition">
+                    <User size={18} />
+                    <span>{user.nome.split(' ')[0]}</span>
+                </Link>
+            ) : (
+                <Link to="/login" className="flex items-center gap-2 border border-white px-4 py-2 rounded-full text-sm font-bold hover:bg-white hover:text-[#1f2b6c] transition">
+                    <LogIn size={18} />
+                    <span>Entrar</span>
+                </Link>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
             <Link to="/agendamento">
               <button className="bg-[#bfdbfe] text-[#1f2b6c] px-6 py-2 rounded-full font-bold hover:bg-white transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                 Agendamento
@@ -136,7 +156,7 @@ export default function Layout() {
   return (
     <div className="font-sans flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-grow">
+      <main className="grow">
         <Outlet />
       </main>
       <Footer />
