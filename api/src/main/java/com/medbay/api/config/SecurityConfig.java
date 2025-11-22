@@ -28,17 +28,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(req -> {
-                    req.requestMatchers("/h2-console/**").permitAll();
-                    req.requestMatchers("/api/login", "/api/cadastro").permitAll();
-                    req.requestMatchers("/api/medicos/**", "/api/servicos/**").permitAll();
-                    req.anyRequest().authenticated();
-                })
-                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/login", "/api/cadastro").permitAll()
+                        .requestMatchers("/api/medicos/**", "/api/servicos/**").permitAll()
+                        .requestMatchers("/api/consultas/**").permitAll()
+
+                        .anyRequest().authenticated()
+                )
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
 
         return http.build();
     }

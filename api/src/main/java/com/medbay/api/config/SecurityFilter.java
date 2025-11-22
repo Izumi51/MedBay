@@ -1,6 +1,6 @@
 package com.medbay.api.config;
 
-import com.medbay.api.repository.PacienteRepository; // Ou UsuarioRepository genérico
+import com.medbay.api.repository.UsuarioRepository;
 import com.medbay.api.service.TokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,7 @@ public class SecurityFilter extends OncePerRequestFilter {
     private TokenService tokenService;
 
     @Autowired
-    private PacienteRepository repository; // Usando PacienteRepository para simplificar, ideal seria UsuarioRepository
+    private UsuarioRepository repository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -29,14 +29,13 @@ public class SecurityFilter extends OncePerRequestFilter {
 
         if (tokenJWT != null) {
             var subject = tokenService.getSubject(tokenJWT);
-            var usuario = repository.findByEmail(subject);
+            var usuario = repository.findByEmail(subject); // Busca genérica
 
             if (usuario != null) {
-                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, null); // Adicionar authorities se tiver roles
+                var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }
-
         filterChain.doFilter(request, response);
     }
 
