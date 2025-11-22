@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router';
 import api from '../services/api';
 
 export default function Agendamento() {
+  const { user, authenticated } = useContext(AuthContext);
+  const navigate = useNavigate();  
   const [medicos, setMedicos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mensagemSucesso, setMensagemSucesso] = useState('');
@@ -35,11 +40,17 @@ export default function Agendamento() {
 
   // Envio do formulário
   const handleSubmit = async (e) => {
+    if (!authenticated) {
+        alert("Você precisa estar logado para agendar!");
+        navigate('/login');
+        return;
+    }
+
     e.preventDefault();
     
     // Montagem do objeto para a API (AgendamentoRequestDTO)
     const payload = {
-      pacienteId: 4, // ID HARDCODED do Paciente Teste (criado no data.sql)
+      pacienteId: user.id,
       medicoId: formData.medicoId,
       dataHora: `${formData.data}T${formData.hora}:00`, // Formato ISO: 2025-11-20T14:30:00
       tipoConsulta: "PRESENCIAL" // Default conforme regra de negócio básica

@@ -51,6 +51,7 @@ const Navbar = () => {
             <li><Link to="/servicos" className={isActive("/servicos")}>Serviços</Link></li>
             <li><Link to="/colaboradores" className={isActive("/colaboradores")}>Colaboradores</Link></li>
             <li><Link to="/contato" className={isActive("/contato")}>Contato</Link></li>
+            <li><Link to="/minhas-consultas" className={isActive("/minhas-consultas")}>Meus Agendamentos</Link></li>
           </ul>
           
           <div className="flex items-center gap-4">
@@ -85,6 +86,7 @@ const Footer = () => (
           <li><Link to="/colaboradores" className="hover:text-[#159eec] transition-colors">Colaboradores</Link></li>
           <li><Link to="/servicos" className="hover:text-[#159eec] transition-colors">Serviços</Link></li>
           <li><Link to="/sobre" className="hover:text-[#159eec] transition-colors">Sobre Nós</Link></li>
+          <li><Link to="/minhas-consultas" className="hover:text-[#159eec] transition-colors">Meus Agendamentos</Link></li>
         </ul>
       </div>
       

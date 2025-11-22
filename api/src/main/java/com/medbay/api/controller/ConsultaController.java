@@ -17,6 +17,9 @@ import com.medbay.api.model.Pagamento;
 import com.medbay.api.model.ReceitaMedica;
 import com.medbay.api.model.enums.StatusPagamento;
 import java.time.LocalDateTime;
+import com.medbay.api.dto.ConsultaResponseDTO;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import java.math.BigDecimal;
 
@@ -117,5 +120,16 @@ public class ConsultaController {
         receitaRepository.save(receita);
 
         return ResponseEntity.ok("Receita emitida com sucesso.");
+    }
+
+    @GetMapping("/paciente/{pacienteId}")
+    public ResponseEntity<List<ConsultaResponseDTO>> listarMinhasConsultas(@PathVariable Long pacienteId) {
+        List<Consulta> consultas = consultaRepository.findByPacienteId(pacienteId);
+
+        List<ConsultaResponseDTO> resposta = consultas.stream()
+                .map(ConsultaResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resposta);
     }
 }
